@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Informatics Portal</title>
+
+  <style>
+    :root{
+      --bg0:#07110F; --bg1:#0A1714;
+      --cream:#F2EAD5; --teal:#4C9485; --deep:#306156;
+      --card: rgba(242,234,213,0.07);
+      --card2: rgba(242,234,213,0.045);
+      --stroke: rgba(242,234,213,0.14);
+      --text: rgba(242,234,213,0.94);
+      --muted: rgba(242,234,213,0.70);
+      --good:#32D583; --bad:#FF5A5F; --warn:#F7B955;
+      --shadow: 0 22px 60px rgba(0,0,0,0.55);
+      --radius: 18px;
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(900px 540px at 18% -5%, rgba(76,148,133,0.25), transparent 60%),
+        radial-gradient(900px 540px at 92% 0%, rgba(48,97,86,0.25), transparent 58%),
+        radial-gradient(900px 700px at 50% 115%, rgba(242,234,213,0.08), transparent 65%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+    }
+    .bg-shimmer{
+      position:fixed; inset:-40%;
+      background: linear-gradient(120deg,
+        transparent 0%,
+        rgba(242,234,213,0.06) 15%,
+        transparent 30%,
+        transparent 60%,
+        rgba(76,148,133,0.08) 75%,
+        transparent 90%);
+      transform: translateX(-20%);
+      animation: shimmer 11s linear infinite alternate;
+      pointer-events:none;
+      filter: blur(16px);
+      opacity:.65;
+    }
+    @keyframes shimmer{ 0%{transform:translateX(-25%) rotate(5deg);} 100%{transform:translateX(25%) rotate(5deg);} }
+
+    .mngha-fixed{
+      position: fixed; top: 18px; left: 18px; z-index: 9999;
+      width: 190px; height: 74px;
+      background: transparent; border:none; box-shadow:none; padding:0; margin:0;
+      display:flex; align-items:center; justify-content:flex-start;
+      transition: transform 200ms var(--ease), filter 200ms var(--ease), opacity 200ms var(--ease);
+    }
+    .mngha-fixed:hover{ transform: translateY(-1px); filter: brightness(1.06); opacity:.98; }
+    .mngha-fixed img{ width:100%; height:100%; object-fit:contain; display:block; }
+
+    .wrap{
+      width:min(980px, calc(100% - 32px));
+      margin: 46px auto 60px;
+      position:relative;
+      animation: enter 700ms var(--ease) both;
+    }
+    @keyframes enter{ from{opacity:0; transform:translateY(16px) scale(.985);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+    header{
+      display:flex; align-items:center; gap:16px;
+      margin-bottom:14px;
+    }
+    .logoWrap{
+      width:208px; height:208px; border-radius:22px;
+      background: rgba(242,234,213,0.10);
+      border: 1px solid rgba(242,234,213,0.18);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.45);
+      display:grid; place-items:center;
+      overflow:hidden; position:relative;
+    }
+    .logoWrap::before{
+      content:""; position:absolute; inset:-2px;
+      background:
+        radial-gradient(32px 32px at 25% 20%, rgba(242,234,213,0.30), transparent 55%),
+        radial-gradient(42px 42px at 80% 10%, rgba(76,148,133,0.22), transparent 60%);
+      filter: blur(10px); opacity:0.9; pointer-events:none;
+    }
+    .logoImg{ width:192px; height:192px; object-fit:contain; display:block; position:relative; z-index:1; }
+    .brand{ display:flex; flex-direction:column; line-height:1.1; }
+    .brand .title{ font-size:1.38rem; letter-spacing:-0.02em; font-weight:900; }
+    .brand .subtitle{ color:var(--muted); font-size:0.98rem; margin-top:6px; }
+
+    .card{
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding:20px;
+      position:relative; overflow:hidden;
+    }
+    .card::before{
+      content:""; position:absolute; inset:-2px;
+      background:
+        radial-gradient(700px 260px at 20% 0%, rgba(76,148,133,0.20), transparent 55%),
+        radial-gradient(700px 260px at 80% 0%, rgba(48,97,86,0.22), transparent 55%);
+      opacity:0.95; pointer-events:none; filter: blur(16px);
+    }
+    .card > *{ position:relative; z-index:1; }
+
+    .grid{ display:grid; gap:14px; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .cols{ display:grid; gap:14px; grid-template-columns: 1.1fr 0.9fr; }
+    @media (max-width: 900px){ .cols{ grid-template-columns: 1fr; } }
+
+    label{ display:block; font-size:0.92rem; color:var(--muted); margin-bottom:8px; user-select:none; }
+    input, select, textarea{
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(242,234,213,0.18);
+      background: rgba(0,0,0,0.22);
+      color: var(--text);
+      outline:none;
+      transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease), transform 200ms var(--ease);
+      font-size:1rem;
+    }
+    textarea{ min-height: 110px; resize: vertical; }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(76,148,133,0.70);
+      box-shadow: 0 0 0 4px rgba(76,148,133,0.16);
+      transform: translateY(-1px);
+    }
+
+    button{
+      border:0; border-radius: 14px;
+      padding: 12px 14px;
+      font-weight:900;
+      cursor:pointer;
+      transition: transform 200ms var(--ease), filter 200ms var(--ease), box-shadow 200ms var(--ease), opacity 200ms var(--ease);
+      display:inline-flex; align-items:center; gap:10px;
+      user-select:none; white-space:nowrap;
+    }
+    button:active{ transform: translateY(1px) scale(0.99); }
+    button:disabled{ cursor:not-allowed; opacity:.55; }
+    .btn-primary{
+      background: linear-gradient(135deg, var(--teal), var(--deep));
+      color: rgba(7,17,15,0.96);
+      box-shadow: 0 16px 34px rgba(76,148,133,0.18);
+    }
+    .btn-primary:hover{ filter: brightness(1.06); transform: translateY(-1px); }
+    .btn-ghost{
+      background: rgba(242,234,213,0.08);
+      border: 1px solid rgba(242,234,213,0.18);
+      color: var(--text);
+    }
+    .btn-ghost:hover{ background: rgba(242,234,213,0.11); transform: translateY(-1px); }
+
+    .status{
+      display:flex; align-items:center; gap:10px;
+      color: var(--muted);
+      min-height: 22px;
+      font-size:0.98rem;
+      margin-top: 10px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid rgba(242,234,213,0.18);
+      background: rgba(0,0,0,0.18);
+      color: rgba(242,234,213,0.88);
+      font-weight:900; font-size:0.86rem;
+      letter-spacing: 0.01em;
+    }
+    .pill.good{ border-color: rgba(50,213,131,0.38); color: rgba(50,213,131,0.98); }
+    .pill.bad{ border-color: rgba(255,90,95,0.38); color: rgba(255,90,95,0.98); }
+    .pill.warn{ border-color: rgba(247,185,85,0.38); color: rgba(247,185,85,0.98); }
+    .pill.pending{ border-color: rgba(247,185,85,0.35); color: rgba(247,185,85,0.95); }
+    .pill.approved{ border-color: rgba(50,213,131,0.35); color: rgba(50,213,131,0.95); }
+    .pill.rejected{ border-color: rgba(255,90,95,0.35); color: rgba(255,90,95,0.95); }
+
+    .box{
+      border-radius: 16px;
+      border: 1px solid rgba(242,234,213,0.14);
+      background: rgba(0,0,0,0.18);
+      padding: 14px;
+    }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(242,234,213,0.16);
+      background: rgba(0,0,0,0.16);
+      font-weight:850;
+      font-size:0.9rem;
+      color: rgba(242,234,213,0.9);
+    }
+    .chip button{
+      padding:0; border-radius:10px;
+      background: transparent; border:none;
+      color: rgba(242,234,213,0.8);
+      cursor:pointer;
+      font-weight:900;
+    }
+
+    table{ width:100%; border-collapse: collapse; }
+    th, td{
+      text-align:left;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(242,234,213,0.10);
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+    th{ color: rgba(242,234,213,0.75); font-size:0.9rem; }
+    .muted{ color: rgba(242,234,213,0.72); }
+    .hidden{ display:none !important; }
+
+    .spinner{
+      width:16px; height:16px; border-radius:50%;
+      border: 2px solid rgba(7,17,15,0.25);
+      border-top-color: rgba(7,17,15,0.92);
+      animation: spin 700ms linear infinite;
+      display:none;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform: translateX(-50%);
+      background: rgba(0,0,0,0.60);
+      border: 1px solid rgba(242,234,213,0.14);
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: rgba(242,234,213,0.92);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      opacity:0; pointer-events:none;
+    }
+    .toast.show{ animation: toastInOut 2200ms var(--ease) both; }
+    @keyframes toastInOut{
+      0%{ opacity:0; transform: translateX(-50%) translateY(10px); }
+      12%{ opacity:1; transform: translateX(-50%) translateY(0); }
+      85%{ opacity:1; transform: translateX(-50%) translateY(0); }
+      100%{ opacity:0; transform: translateX(-50%) translateY(10px); }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="mngha-fixed" href="#" aria-label="MNGHA">
+    <img src="MNGHAlogo.svg" alt="MNGHA Logo" onerror="this.onerror=null; this.src='MNGHAlogo.png';" />
+  </a>
+
+  <div class="bg-shimmer"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="logoWrap">
+        <img class="logoImg" src="InformaticsLogo.svg" alt="App Logo" onerror="this.onerror=null; this.src='InformaticsLogo.png';" />
+      </div>
+      <div class="brand">
+        <div class="title">Informatics Portal</div>
+        <div class="subtitle">Firebase Email Link Login • Submit requests • Track approvals</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <!-- LOGIN VIEW -->
+      <div id="viewLogin" class="grid">
+        <div class="box">
+          <div class="grid">
+            <div>
+              <label for="email">Work Email</label>
+              <input id="email" type="email" placeholder="username@company.com" autocomplete="email" />
+              <div class="muted" style="margin-top:8px;">
+                We will send a sign-in link to your email (passwordless).
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn-primary" id="btnSend" type="button">
+                ✉️ Send Sign-in Link <span class="spinner" id="spinSend"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="otpBox" class="box hidden">
+          <div class="grid">
+            <div>
+              <label for="otp">Open your email</label>
+              <input id="otp" disabled value="Click the sign-in link in your inbox." />
+              <div class="muted" style="margin-top:8px;">
+                After you click the link, you will be logged in automatically.
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn-primary" id="btnVerify" type="button">
+                ✅ I clicked the link <span class="spinner" id="spinVerify"></span>
+              </button>
+              <button class="btn-ghost" id="btnResend" type="button">🔁 Resend</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APP VIEW -->
+      <div id="viewApp" class="grid hidden">
+        <div class="row" style="justify-content: space-between;">
+          <div class="status" style="margin:0;">
+            <span class="pill good">Logged in</span>
+            <span id="meText"></span>
+          </div>
+          <div class="row">
+            <button class="btn-ghost" id="btnRefresh" type="button">🔄 Refresh</button>
+            <button class="btn-ghost" id="btnLogout" type="button">🚪 Logout</button>
+          </div>
+        </div>
+
+        <div class="cols">
+          <!-- LEFT: Balance + Submit -->
+          <div class="grid">
+            <div class="box">
+              <div class="row" style="justify-content: space-between;">
+                <div>
+                  <div class="muted">Remaining Lieu Days</div>
+                  <div style="font-size:2.0rem; font-weight:950; margin-top:4px;" id="lieuDaysText">—</div>
+                </div>
+                <div class="pill" id="balancePill">Balance</div>
+              </div>
+              <div class="muted" style="margin-top:10px;" id="approversText"></div>
+            </div>
+
+            <div class="box">
+              <div style="font-weight:950; font-size:1.05rem; margin-bottom:10px;">Submit Overtime Reimbursement</div>
+
+              <div class="grid">
+                <div>
+                  <label>Add Covered Day</label>
+                  <div class="row">
+                    <input id="datePick" type="date" />
+                    <button class="btn-ghost" id="btnAddDate" type="button">➕ Add</button>
+                    <button class="btn-ghost" id="btnClearDates" type="button">🧹 Clear</button>
+                  </div>
+                  <div class="muted" style="margin-top:8px;">Selected days: <b id="daysCountText">0</b></div>
+                  <div class="chips" id="chips"></div>
+                </div>
+
+                <div>
+                  <label for="reqType">Reimbursement Type</label>
+                  <select id="reqType">
+                    <option value="Paid Overtime">Paid Overtime</option>
+                    <option value="Lieu Days">Lieu Days</option>
+                  </select>
+                  <div class="muted" style="margin-top:8px;">If approved as <b>Lieu Days</b>, the days will be added to your balance.</div>
+                </div>
+
+                <div>
+                  <label for="justification">Justification</label>
+                  <textarea id="justification" placeholder="Write the reason, shift details, coverage context, etc."></textarea>
+                </div>
+
+                <div class="row">
+                  <button class="btn-primary" id="btnSubmit" type="button">
+                    📩 Submit Request <span class="spinner" id="spinSubmit"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Requests table -->
+          <div class="box">
+            <div class="row" style="justify-content: space-between; margin-bottom:10px;">
+              <div style="font-weight:950; font-size:1.05rem;">My Requests</div>
+              <div class="muted" id="reqCountText"></div>
+            </div>
+
+            <div style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Submitted</th>
+                    <th>Days</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="reqTbody">
+                  <tr><td colspan="5" class="muted">No data yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared status line -->
+      <div class="status" id="status">
+        <span class="pill" id="statusPill" style="display:none;"></span>
+        <span id="statusText"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ✅ Firebase + App Logic (IMPORTANT: must be inside script tag) -->
+  <script type="module">
+    // =============================================
+    // Firebase config (yours) ✅
+    // =============================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBt67CI3vrmA4DNNfQRmyALybYmTgHEIdg",
+      authDomain: "informaticsportal.firebaseapp.com",
+      projectId: "informaticsportal",
+      storageBucket: "informaticsportal.firebasestorage.app",
+      messagingSenderId: "462485895945",
+      appId: "1:462485895945:web:140bef10354fa4ad2ff1d8",
+      measurementId: "G-DJJE4XPNYX"
+    };
+
+    // Use the exact URL of THIS page (recommended).
+    // This auto-builds: https://yourdomain/path/file.html
+    const EMAIL_LINK_CONTINUE_URL = window.location.origin + window.location.pathname;
+
+    // =============================================
+    // Firebase imports (CDN) ✅ NO npm needed
+    // =============================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      sendSignInLinkToEmail,
+      isSignInWithEmailLink,
+      signInWithEmailLink,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      orderBy,
+      getDocs,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // (Optional) Analytics - only works reliably when hosted over https and in real domains.
+    // If you don't need it, we skip importing firebase-analytics to avoid console noise.
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // =============================================
+    // Helpers
+    // =============================================
+    const el = (id) => document.getElementById(id);
+    const toast = el("toast");
+
+    const viewLogin = el("viewLogin");
+    const viewApp   = el("viewApp");
+    const otpBox    = el("otpBox");
+
+    const emailInput = el("email");
+    const btnSend = el("btnSend");
+    const btnVerify = el("btnVerify");
+    const btnResend = el("btnResend");
+
+    const spinSend = el("spinSend");
+    const spinVerify = el("spinVerify");
+    const spinSubmit = el("spinSubmit");
+
+    const btnLogout = el("btnLogout");
+    const btnRefresh = el("btnRefresh");
+
+    const meText = el("meText");
+    const lieuDaysText = el("lieuDaysText");
+    const approversText = el("approversText");
+
+    const datePick = el("datePick");
+    const btnAddDate = el("btnAddDate");
+    const btnClearDates = el("btnClearDates");
+    const chips = el("chips");
+    const daysCountText = el("daysCountText");
+
+    const reqType = el("reqType");
+    const justification = el("justification");
+    const btnSubmit = el("btnSubmit");
+
+    const reqTbody = el("reqTbody");
+    const reqCountText = el("reqCountText");
+
+    const statusText = el("statusText");
+    const statusPill = el("statusPill");
+
+    const EMAIL_FOR_LINK_KEY = "portal_email_for_link_v1";
+
+    let selectedDates = [];
+
+    function showToast(message){
+      toast.textContent = message;
+      toast.classList.remove("show");
+      void toast.offsetWidth;
+      toast.classList.add("show");
+    }
+
+    function setStatus(type, message){
+      statusText.textContent = message || "";
+      if (!message){
+        statusPill.style.display = "none";
+        return;
+      }
+      statusPill.style.display = "inline-flex";
+      statusPill.className = "pill " + (type || "");
+      statusPill.textContent =
+        type === "good" ? "Success" :
+        type === "bad"  ? "Error" :
+        type === "warn" ? "Working" : "Info";
+    }
+
+    function setLoading(which, on){
+      const map = { send: spinSend, verify: spinVerify, submit: spinSubmit };
+      const sp = map[which];
+      if (sp) sp.style.display = on ? "inline-block" : "none";
+
+      btnSend.disabled = on;
+      btnVerify.disabled = on;
+      btnResend.disabled = on;
+      btnSubmit.disabled = on;
+      btnRefresh && (btnRefresh.disabled = on);
+      btnLogout && (btnLogout.disabled = on);
+    }
+
+    function showLogin(){
+      viewApp.classList.add("hidden");
+      viewLogin.classList.remove("hidden");
+      otpBox.classList.add("hidden");
+      setStatus("", "");
+      emailInput.focus();
+    }
+
+    function showApp(){
+      viewLogin.classList.add("hidden");
+      viewApp.classList.remove("hidden");
+      setStatus("", "");
+    }
+
+    // =============================================
+    // Dates UI
+    // =============================================
+    function renderDates(){
+      chips.innerHTML = "";
+      selectedDates.sort();
+      for (const d of selectedDates){
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.innerHTML = `<span>${d}</span>`;
+        const x = document.createElement("button");
+        x.type = "button";
+        x.textContent = "✕";
+        x.onclick = () => {
+          selectedDates = selectedDates.filter(v => v !== d);
+          renderDates();
+        };
+        chip.appendChild(x);
+        chips.appendChild(chip);
+      }
+      daysCountText.textContent = String(selectedDates.length);
+    }
+
+    btnAddDate.addEventListener("click", () => {
+      const d = datePick.value;
+      if (!d) return;
+      if (!selectedDates.includes(d)) selectedDates.push(d);
+      renderDates();
+    });
+
+    btnClearDates.addEventListener("click", () => {
+      selectedDates = [];
+      renderDates();
+    });
+
+    // =============================================
+    // Requests table
+    // =============================================
+    function statusPillFor(s){
+      const t = String(s || "").toLowerCase();
+      if (t.includes("approve")) return `<span class="pill approved">Approved</span>`;
+      if (t.includes("reject")) return `<span class="pill rejected">Rejected</span>`;
+      return `<span class="pill pending">Pending</span>`;
+    }
+
+    function renderRequests(reqs){
+      reqCountText.textContent = `${reqs.length} request(s)`;
+      if (!reqs.length){
+        reqTbody.innerHTML = `<tr><td colspan="5" class="muted">No requests yet.</td></tr>`;
+        return;
+      }
+
+      reqTbody.innerHTML = "";
+      for (const r of reqs){
+        const created = r.createdAt ? new Date(r.createdAt).toLocaleString() : "—";
+        const days = r.daysCount ?? "—";
+        const type = r.requestType ?? "—";
+        const status = statusPillFor(r.status);
+        const details = (r.approvalSummary || "").toString().slice(0, 120) + ((r.approvalSummary||"").length>120 ? "…" : "");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${created}</td>
+          <td>${days}</td>
+          <td>${type}</td>
+          <td>${status}</td>
+          <td class="muted">${details || "—"}</td>
+        `;
+        reqTbody.appendChild(row);
+      }
+    }
+
+    // =============================================
+    // Auth: Email Link
+    // =============================================
+    async function sendEmailLink(email){
+      setLoading("send", true);
+      setStatus("warn", "Sending sign-in link…");
+
+      try{
+        await sendSignInLinkToEmail(auth, email, {
+          url: EMAIL_LINK_CONTINUE_URL,
+          handleCodeInApp: true,
+        });
+
+        localStorage.setItem(EMAIL_FOR_LINK_KEY, email);
+        otpBox.classList.remove("hidden");
+        setStatus("good", "Sign-in link sent. Check your inbox.");
+        showToast("Link sent");
+      }catch(err){
+        console.error(err);
+        setStatus("bad", err?.message || "Could not send sign-in link.");
+        showToast("Send failed");
+      }finally{
+        setLoading("send", false);
+      }
+    }
+
+    async function tryFinishEmailLinkSignIn(){
+      if (!isSignInWithEmailLink(auth, window.location.href)) return false;
+
+      const storedEmail = localStorage.getItem(EMAIL_FOR_LINK_KEY);
+      const email = storedEmail || emailInput.value.trim();
+
+      if (!email){
+        setStatus("bad", "Missing email. Please enter your email first, then click the link again.");
+        return false;
+      }
+
+      setLoading("verify", true);
+      setStatus("warn", "Finishing sign-in…");
+
+      try{
+        await signInWithEmailLink(auth, email, window.location.href);
+        localStorage.removeItem(EMAIL_FOR_LINK_KEY);
+
+        // Clean URL (remove oobCode params)
+        window.history.replaceState({}, document.title, EMAIL_LINK_CONTINUE_URL);
+
+        showToast("Welcome");
+        return true;
+      }catch(err){
+        console.error(err);
+        setStatus("bad", err?.message || "Sign-in link invalid/expired.");
+        showToast("Sign-in failed");
+        return false;
+      }finally{
+        setLoading("verify", false);
+      }
+    }
+
+    btnSend.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes("@")){
+        setStatus("bad", "Enter a valid work email.");
+        return;
+      }
+      await sendEmailLink(email);
+    });
+
+    btnResend.addEventListener("click", () => btnSend.click());
+
+    btnVerify.addEventListener("click", async () => {
+      const ok = await tryFinishEmailLinkSignIn();
+      if (!ok){
+        setStatus("warn", "If you clicked the link, open this page in the same browser where you clicked it.");
+      }
+    });
+
+    btnLogout.addEventListener("click", async () => {
+      await signOut(auth);
+      showToast("Logged out");
+      showLogin();
+    });
+
+    // =============================================
+    // Firestore: dashboard + submit
+    // Collections:
+    // employees/{email}
+    // overtimeRequests (docs with employeeEmail, dates[], daysCount, requestType, justification, status, etc.)
+    // =============================================
+    async function loadDashboard(){
+      const user = auth.currentUser;
+      if (!user?.email){ showLogin(); return; }
+
+      setStatus("warn", "Loading dashboard…");
+
+      try{
+        const employeeRef = doc(db, "employees", user.email);
+        const employeeSnap = await getDoc(employeeRef);
+
+        if (!employeeSnap.exists()){
+          showApp();
+          meText.textContent = user.email;
+          lieuDaysText.textContent = "—";
+          approversText.textContent = "Approvers: —";
+          renderRequests([]);
+          setStatus("bad", "Your account is not registered in Firestore: employees/" + user.email);
+          return;
+        }
+
+        const emp = employeeSnap.data();
+
+        const reqQ = query(
+          collection(db, "overtimeRequests"),
+          where("employeeEmail", "==", user.email),
+          orderBy("createdAt", "desc")
+        );
+        const reqSnap = await getDocs(reqQ);
+        const reqs = reqSnap.docs.map(d => {
+          const x = d.data();
+          return {
+            ...x,
+            createdAt: x.createdAt?.toDate ? x.createdAt.toDate().toISOString() : null
+          };
+        });
+
+        showApp();
+        meText.textContent = emp.displayName ? `${emp.displayName} (${user.email})` : user.email;
+        lieuDaysText.textContent = String(emp.lieuDays ?? 0);
+        approversText.textContent =
+          `Approvers: Supervisor (${emp.supervisorEmail || "—"}) • Assistant Director (${emp.assistantDirectorEmail || "—"})`;
+
+        renderRequests(reqs);
+        setStatus("good", "Ready.");
+      }catch(err){
+        console.error(err);
+        setStatus("bad", err?.message || "Failed to load dashboard.");
+      }
+    }
+
+    btnRefresh.addEventListener("click", loadDashboard);
+
+    btnSubmit.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user?.email){ showLogin(); return; }
+
+      if (!selectedDates.length){
+        setStatus("bad", "Please add at least one covered day.");
+        return;
+      }
+      const just = justification.value.trim();
+      if (just.length < 10){
+        setStatus("bad", "Please write a brief justification (at least 10 characters).");
+        return;
+      }
+
+      setLoading("submit", true);
+      setStatus("warn", "Submitting request…");
+
+      try{
+        const payload = {
+          employeeEmail: user.email,
+          dates: selectedDates.slice(),              // array of strings "YYYY-MM-DD"
+          daysCount: selectedDates.length,
+          requestType: reqType.value,
+          justification: just,
+          status: "Pending",
+          approvalSummary: "",
+          approvedAt: null,
+          rejectedReason: "",
+          createdAt: serverTimestamp(),
+        };
+
+        await addDoc(collection(db, "overtimeRequests"), payload);
+
+        setStatus("good", "Request submitted for approval.");
+        showToast("Submitted");
+
+        selectedDates = [];
+        renderDates();
+        justification.value = "";
+
+        await loadDashboard();
+      }catch(err){
+        console.error(err);
+        setStatus("bad", err?.message || "Submit failed.");
+        showToast("Submit failed");
+      }finally{
+        setLoading("submit", false);
+      }
+    });
+
+    // =============================================
+    // INIT
+    // =============================================
+    renderDates();
+    await tryFinishEmailLinkSignIn();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user?.email) loadDashboard();
+      else showLogin();
+    });
+  </script>
+</body>
+</html>
